@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "id": "admin_user",
+      "name": "Admin",
+      "surname": "User",
+      "description": "Default administrator account",
+      "username": "admin",
+      "passwordHash": "$2a$10$8ngjjsNHn8JcPYFtwGfuz.O3rX3pcbvaCT7.4Ycx86hgxwYZVffsm",
+      "createdAt": "2025-08-20T13:38:35.908Z"
+    }
+  ],
+  "sellEntries": []
+}

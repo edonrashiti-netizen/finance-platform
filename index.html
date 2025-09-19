@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Finance Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="scripts/app.js"></script>
+  </head>
+  <body>
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-container">
+        <div class="login-header">
+          <h1>Finance Platform</h1>
+          <p>Please login to continue</p>
+        </div>
+        <form id="mainLoginForm" class="login-form">
+          <div class="form-field">
+            <label for="mainLoginUsername">Username</label>
+            <input id="mainLoginUsername" name="mainLoginUsername" type="text" placeholder="Enter username" required>
+          </div>
+          <div class="form-field">
+            <label for="mainLoginPassword">Password</label>
+            <input id="mainLoginPassword" name="mainLoginPassword" type="password" placeholder="Enter password" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn">Login</button>
+          </div>
+        </form>
+        <div id="mainLoginStatus" class="login-status" style="display: none;">
+          <div id="mainLoginStatusMessage"></div>
+        </div>
+        <div class="login-footer">
+          <small>Don't have an account? Register in Configuration → Users</small>
+        </div>
+      </div>
+    </div>
+
+    <header class="app-header">
+      <div class="container">
+        <h1>Finance Platform</h1>
+        <div class="header-actions">
+          <div id="userInfoBtn" class="user-info-btn" style="display: none;">
+            <button class="btn btn-secondary">
+              <span id="userInfoText">User</span>
+              <span class="user-arrow">▼</span>
+            </button>
+            <div class="user-dropdown">
+              <div class="user-dropdown-header">
+                <span id="userDropdownName">User Name</span>
+                <span id="userDropdownUsername">username</span>
+              </div>
+              <button id="logoutBtn" class="user-dropdown-item">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs container" role="tablist" aria-label="Finance sections">
+      <button class="tab active" data-tab-target="#dashboard" role="tab" aria-selected="true">Dashboard</button>
+      <button class="tab" data-tab-target="#sellLedger" role="tab" aria-selected="false">Sell Ledger</button>
+      <button class="tab" data-tab-target="#purchases" role="tab" aria-selected="false">Purchases</button>
+      <button class="tab" data-tab-target="#otherExpenses" role="tab" aria-selected="false">Other Expenses</button>
+      <button class="tab" data-tab-target="#profitLoss" role="tab" aria-selected="false">Profit & Loss</button>
+      <button class="tab" data-tab-target="#configuration" role="tab" aria-selected="false">Configuration</button>
+    </nav>
+
+    <main class="container">
+      <!-- Dashboard -->
+      <section id="dashboard" class="tab-panel active" role="tabpanel">
+        <h2>Dashboard</h2>
+        <div class="card">
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">Date Range Filter</h3>
+          <div class="date-filter">
+            <div class="form-field">
+              <label for="dashboardFromDate">From Date</label>
+              <input id="dashboardFromDate" name="dashboardFromDate" type="date" required>
+            </div>
+            <div class="form-field">
+              <label for="dashboardToDate">To Date</label>
+              <input id="dashboardToDate" name="dashboardToDate" type="date" required>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="applyDateFilter" class="btn">Apply Filter</button>
+              <button type="button" id="resetDateFilter" class="btn btn-secondary">Reset to Current Month</button>
+            </div>
+          </div>
+        </div>
+        <div class="card dashboard-grid">
+          <div class="chart-card">
+            <div class="chart-header">Sales by Month</div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-color fiscal"></span>Fiscal</span>
+              <span class="legend-item"><span class="legend-color non-fiscal"></span>Non-Fiscal</span>
+            </div>
+            <canvas id="sellChart" height="220"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">Purchases & Expenses by Month</div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-color purchases"></span>Purchases</span>
+              <span class="legend-item"><span class="legend-color expenses"></span>Other Expenses</span>
+            </div>
+            <canvas id="expensesChart" height="220"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">Payments by Method (Count)</div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-color purchases"></span>Cash</span>
+              <span class="legend-item"><span class="legend-color fiscal"></span>Bank</span>
+            </div>
+            <canvas id="paymentMethodChart" height="160"></canvas>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:6px;">
+            <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600; flex:1;">Financial Report</h3>
+            <button id="openPLBtn" type="button" class="btn" title="Open Profit & Loss Statement">Profit & Loss</button>
+          </div>
+          <div class="financial-report">
+            <div class="report-section">
+              <h4>Sales Summary</h4>
+              <div class="report-row">
+                <span class="report-label">Fiscal Sales:</span>
+                <span class="report-value" id="fiscalSales">€0.00</span>
+              </div>
+              <div class="report-row">
+                <span class="report-label">Non-Fiscal Sales:</span>
+                <span class="report-value" id="nonFiscalSales">€0.00</span>
+              </div>
+              <div class="report-row total">
+                <span class="report-label">Total Sales:</span>
+                <span class="report-value" id="totalSales">€0.00</span>
+              </div>
+            </div>
+            
+            <div class="report-section">
+              <h4>Expenses Summary</h4>
+              <div class="report-row">
+                <span class="report-label">Purchases:</span>
+                <span class="report-value" id="totalPurchases">€0.00</span>
+              </div>
+              <div class="report-row">
+                <span class="report-label">Other Expenses:</span>
+                <span class="report-value" id="totalOtherExpenses">€0.00</span>
+              </div>
+              <div class="report-row total">
+                <span class="report-label">Total Expenses:</span>
+                <span class="report-value" id="totalExpenses">€0.00</span>
+              </div>
+            </div>
+            
+            <div class="report-section">
+              <h4>Net Result</h4>
+              <div class="report-row net">
+                <span class="report-label">Net Profit/Loss:</span>
+                <span class="report-value" id="netResult">€0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </section>
+
+      <!-- Sell Ledger -->
+      <section id="sellLedger" class="tab-panel" role="tabpanel" hidden>
+        <h2>Sell Ledger</h2>
+        <form id="sellEntryForm" class="card form-grid" autocomplete="off">
+          <div class="form-field">
+            <label for="sellDate">Date</label>
+            <input id="sellDate" name="sellDate" type="date" required>
+          </div>
+          <div class="form-field">
+            <label for="sellType">Type</label>
+            <select id="sellType" name="sellType" required>
+              <option value="fiscal" selected>Fiscal</option>
+              <option value="non-fiscal">Non-Fiscal</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="sellDescription">Z Report nr.</label>
+            <input id="sellDescription" name="sellDescription" type="text" placeholder="Z Report nr." required>
+          </div>
+          <div class="form-field">
+            <label for="sellAmount">Amount (€)</label>
+            <input id="sellAmount" name="sellAmount" type="number" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn">Add Entry</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <div class="toolbar">
+            <input id="sellSearch" type="text" placeholder="Search Z Report nr..." />
+            <input id="sellFromDate" type="date" title="From date" />
+            <input id="sellToDate" type="date" title="To date" />
+            <div class="spacer"></div>
+            <label class="toolbar-label" for="sellSortBy">Sort by</label>
+            <select id="sellSortBy">
+              <option value="date">Date</option>
+              <option value="createdAt">Registered time</option>
+            </select>
+            <button id="sellOrderBtn" type="button" class="btn btn-secondary" title="Toggle order">↓</button>
+            <button id="sellExportBtn" type="button" class="btn" title="Export visible list to Excel (CSV)">Export to Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table" id="sellEntriesTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Z Report nr.</th>
+                  <th>Created</th>
+                  <th class="right">Amount (€)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="right"><strong>Total</strong></td>
+                  <td class="right" id="sellTotal">€0.00</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Configuration (Landing + subpages) -->
+      <section id="configuration" class="tab-panel" role="tabpanel" hidden>
+        <h2>Configuration</h2>
+        <div class="card card-grid">
+          <button class="nav-card" data-config-target="#configUsers">
+            <div class="nav-card-title">Users</div>
+            <div class="nav-card-desc">Manage user accounts and authentication</div>
+          </button>
+          <button class="nav-card" data-config-target="#configServerSync">
+            <div class="nav-card-title">Server Sync</div>
+            <div class="nav-card-desc">Optional backend connection & settings</div>
+          </button>
+          <button class="nav-card" data-config-target="#configSellers">
+            <div class="nav-card-title">Sellers</div>
+            <div class="nav-card-desc">Manage your sellers and unique numbers</div>
+          </button>
+          <button class="nav-card" data-config-target="#configItems">
+            <div class="nav-card-title">Items</div>
+            <div class="nav-card-desc">Register products or expense types</div>
+          </button>
+          <button class="nav-card" data-config-target="#configExpenseTypes">
+            <div class="nav-card-title">Expense Types</div>
+            <div class="nav-card-desc">Manage custom other-expense categories</div>
+          </button>
+          <button class="nav-card" data-config-target="#configBackup">
+            <div class="nav-card-title">Backup</div>
+            <div class="nav-card-desc">Export or import your data (JSON)</div>
+          </button>
+        </div>
+
+        <div id="configUsers" class="config-panel" hidden>
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">User Management</h3>
+          
+          <!-- User sub-tabs -->
+          <nav class="sub-tabs" role="tablist" aria-label="User management sections">
+            <button class="sub-tab active" data-user-sub-tab-target="#userRegister" role="tab" aria-selected="true">Register User</button>
+            <button class="sub-tab" data-user-sub-tab-target="#userLogin" role="tab" aria-selected="false">Login</button>
+            <button class="sub-tab" data-user-sub-tab-target="#userList" role="tab" aria-selected="false">User List</button>
+          </nav>
+
+          <!-- Register User Tab -->
+          <div id="userRegister" class="user-sub-tab-panel active" role="tabpanel">
+            <form id="userRegisterForm" class="card form-grid" autocomplete="off">
+              <div class="form-field">
+                <label for="userName">Name</label>
+                <input id="userName" name="userName" type="text" placeholder="Enter full name" required>
+              </div>
+              <div class="form-field">
+                <label for="userSurname">Surname</label>
+                <input id="userSurname" name="userSurname" type="text" placeholder="Enter surname" required>
+              </div>
+              <div class="form-field">
+                <label for="userDescription">Description</label>
+                <textarea id="userDescription" name="userDescription" placeholder="Enter user description" rows="3"></textarea>
+              </div>
+              <div class="form-field">
+                <label for="userUsername">Username</label>
+                <input id="userUsername" name="userUsername" type="text" placeholder="Enter username" required>
+              </div>
+              <div class="form-field">
+                <label for="userPassword">Password</label>
+                <input id="userPassword" name="userPassword" type="password" placeholder="Enter password" required>
+              </div>
+              <div class="form-field">
+                <label for="userConfirmPassword">Confirm Password</label>
+                <input id="userConfirmPassword" name="userConfirmPassword" type="password" placeholder="Confirm password" required>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn">Register User</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Login Tab -->
+          <div id="userLogin" class="user-sub-tab-panel" role="tabpanel" hidden>
+            <form id="userLoginForm" class="card form-grid" autocomplete="off">
+              <div class="form-field">
+                <label for="loginUsername">Username</label>
+                <input id="loginUsername" name="loginUsername" type="text" placeholder="Enter username" required>
+              </div>
+              <div class="form-field">
+                <label for="loginPassword">Password</label>
+                <input id="loginPassword" name="loginPassword" type="password" placeholder="Enter password" required>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn">Login</button>
+              </div>
+            </form>
+            <div id="loginStatus" class="card" style="display: none;">
+              <div id="loginStatusMessage"></div>
+            </div>
+          </div>
+
+          <!-- User List Tab -->
+          <div id="userList" class="user-sub-tab-panel" role="tabpanel" hidden>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="table" id="usersTable">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Surname</th>
+                      <th>Username</th>
+                      <th>Description</th>
+                      <th>Created</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="configBackup" class="config-panel" hidden>
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">Backup & Restore</h3>
+          <div class="card">
+            <div class="toolbar">
+              <button id="exportDataBtn" class="btn" type="button">Export JSON</button>
+              <label for="importDataInput" class="btn btn-secondary" style="cursor:pointer;">Import JSON</label>
+              <input id="importDataInput" type="file" accept="application/json" hidden>
+              <div class="spacer"></div>
+            </div>
+            <small class="muted">Exports all local data to a JSON file. Import will replace current lists with data from the file.</small>
+          </div>
+        </div>
+
+        <div id="configServerSync" class="config-panel" hidden>
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">Server Sync (Optional)</h3>
+          <form id="serverSyncForm" class="card form-grid" autocomplete="off">
+            <div class="form-field">
+              <label for="serverApiUrl">API Base URL</label>
+              <input id="serverApiUrl" name="serverApiUrl" type="url" placeholder="http://localhost:4000" />
+            </div>
+            <div class="form-field">
+              <label for="serverSyncEnabled">Enable Server Sync</label>
+              <select id="serverSyncEnabled" name="serverSyncEnabled">
+                <option value="off">Off (local only)</option>
+                <option value="on">On (use backend if available)</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn">Save</button>
+              <button id="clearAllDataBtn" type="button" class="btn btn-danger" title="Delete all local data and reset server (dev only)">Clear All Data</button>
+            </div>
+          </form>
+          <div class="card">
+            <small>When enabled, login will authenticate against the server and sell entries will sync. The app still works offline.</small>
+          </div>
+        </div>
+
+        <div id="configSellers" class="config-panel" hidden>
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">Sellers</h3>
+          <form id="sellerForm" class="card form-grid" autocomplete="off">
+            <div class="form-field">
+              <label for="sellerName">Seller Name</label>
+              <input id="sellerName" name="sellerName" type="text" placeholder="Seller name" required>
+            </div>
+            <div class="form-field">
+              <label for="sellerUniqueNumber">Unique Number</label>
+              <input id="sellerUniqueNumber" name="sellerUniqueNumber" type="text" placeholder="Unique identifier" required>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn">Add Seller</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="table" id="sellersTable">
+                <thead>
+                  <tr>
+                    <th>Seller</th>
+                    <th>Unique Number</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="configItems" class="config-panel" hidden>
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">Items</h3>
+          <form id="itemForm" class="card form-grid" autocomplete="off">
+            <div class="form-field">
+              <label for="itemName">Item Name</label>
+              <input id="itemName" name="itemName" type="text" placeholder="e.g. Paper A4" required>
+            </div>
+            <div class="form-field">
+              <label for="itemPrice">Default Price (€)</label>
+              <input id="itemPrice" name="itemPrice" type="number" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn">Add Item</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="table" id="itemsTable">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th class="right">Default Price (€)</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div id="configExpenseTypes" class="config-panel" hidden>
+          <h3 style="margin:8px 0 0; font-size:14px; color: var(--muted); font-weight:600;">Expense Types</h3>
+          <form id="expenseTypeForm" class="card form-grid" autocomplete="off">
+            <div class="form-field">
+              <label for="expenseTypeName">Type Name</label>
+              <input id="expenseTypeName" name="expenseTypeName" type="text" placeholder="e.g. Insurance" required>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn">Add Type</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="table" id="expenseTypesTable">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Purchases / Invoices -->
+      <section id="purchases" class="tab-panel" role="tabpanel" hidden>
+        <h2>Purchases (Invoices)</h2>
+        
+        <!-- Purchase sub-tabs -->
+        <nav class="sub-tabs" role="tablist" aria-label="Purchase sections">
+          <button class="sub-tab active" data-sub-tab-target="#invoiceList" role="tab" aria-selected="true">Invoice List</button>
+          <button class="sub-tab" data-sub-tab-target="#addInvoice" role="tab" aria-selected="false">Add New Invoice</button>
+        </nav>
+
+        <!-- Invoice List Tab -->
+        <div id="invoiceList" class="sub-tab-panel active" role="tabpanel">
+          <div class="card">
+            <div class="toolbar">
+              <input id="buyFromDate" type="date" title="From invoice date" />
+              <input id="buyToDate" type="date" title="To invoice date" />
+              <div class="spacer"></div>
+              <button id="invoicesExportBtn" type="button" class="btn" title="Export visible list to Excel (CSV)">Export to Excel</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="table" id="invoicesTable">
+                <thead>
+                  <tr>
+                    <th>Seller</th>
+                    <th>Invoice #</th>
+                    <th>Documented Date</th>
+                    <th>Invoice Date</th>
+                    <th>Type</th>
+                    <th class="right">Total (€)</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add New Invoice Tab -->
+        <div id="addInvoice" class="sub-tab-panel" role="tabpanel" hidden>
+          <form id="invoiceForm" class="card form-grid" autocomplete="off">
+            <div class="form-field">
+              <label for="invoiceSeller">Seller</label>
+              <select id="invoiceSeller" name="invoiceSeller" required>
+                <option value="" disabled selected>Select seller</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="invoiceType">Type</label>
+              <select id="invoiceType" name="invoiceType" required>
+                <option value="product" selected>Products</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="invoiceDocumentedDate">Documented Date</label>
+              <input id="invoiceDocumentedDate" name="invoiceDocumentedDate" type="date" required>
+            </div>
+            <div class="form-field">
+              <label for="invoiceDate">Invoice Date</label>
+              <input id="invoiceDate" name="invoiceDate" type="date" required>
+            </div>
+            <div class="form-field">
+              <label for="invoiceNumber">Invoice Number</label>
+              <input id="invoiceNumber" name="invoiceNumber" type="text" placeholder="e.g. INV-2025-001" required>
+            </div>
+            <div class="form-field full-width">
+              <label>Items</label>
+                          <div id="invoiceItems" class="items">
+              <div class="items-header">
+                <div>Item</div>
+                <div class="right">Qty</div>
+                <div class="right">Price (€)</div>
+                <div></div>
+              </div>
+              <!-- rows will be added by JS -->
+            </div>
+              <button id="addItemBtn" type="button" class="btn btn-secondary">Add Item</button>
+            </div>
+            <div class="form-field">
+              <label>Total (€)</label>
+              <output id="invoiceTotal">€0.00</output>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn">Save Invoice</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Other Expenses -->
+      <section id="otherExpenses" class="tab-panel" role="tabpanel" hidden>
+        <h2>Other Expenses</h2>
+
+        <form id="otherExpenseForm" class="card form-grid" autocomplete="off">
+          <div class="form-field">
+            <label for="otherExpenseDate">Date</label>
+            <input id="otherExpenseDate" name="otherExpenseDate" type="date" required>
+          </div>
+          <div class="form-field">
+            <label for="otherExpenseType">Type</label>
+            <select id="otherExpenseType" name="otherExpenseType" required></select>
+          </div>
+          <div class="form-field">
+            <label for="otherExpenseDesc">Description</label>
+            <input id="otherExpenseDesc" name="otherExpenseDesc" type="text" placeholder="Description" required>
+          </div>
+          <div class="form-field">
+            <label for="otherExpenseAmount">Amount (€)</label>
+            <input id="otherExpenseAmount" name="otherExpenseAmount" type="number" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn">Add Expense</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <div class="toolbar">
+            <input id="otherFromDate" type="date" title="From date" />
+            <input id="otherToDate" type="date" title="To date" />
+            <div class="spacer"></div>
+            <button id="otherExpensesExportBtn" type="button" class="btn" title="Export visible list to Excel (CSV)">Export to Excel</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table" id="otherExpensesTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Created</th>
+                  <th class="right">Amount (€)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="right"><strong>Total</strong></td>
+                  <td class="right" id="otherExpensesTotal">€0.00</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Payment</h3>
+          <button type="button" id="paymentCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <form id="paymentForm" class="form-grid" autocomplete="off">
+          <div class="form-field">
+            <label for="paymentMethod">Method</label>
+            <select id="paymentMethod" name="paymentMethod">
+              <option value="">Not paid</option>
+              <option value="cash">Cash</option>
+              <option value="card">Bank</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="paymentDate">Payment Date</label>
+            <input id="paymentDate" name="paymentDate" type="date">
+          </div>
+          <div class="form-actions">
+            <button type="button" id="paymentRemoveBtn" class="btn btn-danger">Remove</button>
+            <button type="submit" class="btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sell Ledger Edit Modal -->
+    <div id="sellEditModal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Edit Sell Entry</h3>
+          <button type="button" id="sellEditCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <form id="sellEditForm" class="form-grid" autocomplete="off">
+          <div class="form-field">
+            <label for="sellEditDate">Date</label>
+            <input id="sellEditDate" name="sellEditDate" type="date" required>
+          </div>
+          <div class="form-field">
+            <label for="sellEditType">Type</label>
+            <select id="sellEditType" name="sellEditType" required>
+              <option value="fiscal">Fiscal</option>
+              <option value="non-fiscal">Non-Fiscal</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="sellEditDescription">Z Report nr.</label>
+            <input id="sellEditDescription" name="sellEditDescription" type="text" placeholder="Z Report nr." required>
+          </div>
+          <div class="form-field">
+            <label for="sellEditAmount">Amount (€)</label>
+            <input id="sellEditAmount" name="sellEditAmount" type="number" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Other Expense Edit Modal -->
+    <div id="otherEditModal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Edit Other Expense</h3>
+          <button type="button" id="otherEditCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <form id="otherEditForm" class="form-grid" autocomplete="off">
+          <div class="form-field">
+            <label for="otherEditDate">Date</label>
+            <input id="otherEditDate" name="otherEditDate" type="date" required>
+          </div>
+          <div class="form-field">
+            <label for="otherEditType">Type</label>
+            <select id="otherEditType" name="otherEditType" required></select>
+          </div>
+          <div class="form-field">
+            <label for="otherEditDesc">Description</label>
+            <input id="otherEditDesc" name="otherEditDesc" type="text" placeholder="Description" required>
+          </div>
+          <div class="form-field">
+            <label for="otherEditAmount">Amount (€)</label>
+            <input id="otherEditAmount" name="otherEditAmount" type="number" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Confirm</h3>
+          <button type="button" id="confirmCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <div id="confirmMessage" style="margin:8px 0 16px; color: var(--text);"></div>
+        <div class="form-actions" style="justify-content: flex-end; gap: 8px;">
+          <button type="button" id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+          <button type="button" id="confirmOkBtn" class="btn">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profit & Loss Full Page -->
+    <section id="profitLoss" class="tab-panel" role="tabpanel" hidden>
+      <h2>Profit & Loss Statement</h2>
+      <div class="card" style="background:#f8fbff;">
+        <div class="toolbar" style="gap:8px;">
+          <label class="toolbar-label" for="plYearSelect">Year</label>
+          <select id="plYearSelect"></select>
+          <div class="spacer"></div>
+          <button id="plExportBtn" type="button" class="btn">Export CSV</button>
+          <button id="plPrintBtn" type="button" class="btn btn-secondary">Print</button>
+        </div>
+      </div>
+      <div class="card" style="padding-top:8px;">
+        <div class="table-responsive">
+          <table class="table" id="plTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- P&L Details Modal -->
+    <div id="plDetailsModal" class="modal" hidden>
+      <div class="modal-content" style="width:min(800px,96%);">
+        <div class="modal-header">
+          <h3 id="plDetailsTitle">Details</h3>
+          <button type="button" id="plDetailsCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table" id="plDetailsTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Item Edit Modal -->
+    <div id="itemEditModal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Edit Item</h3>
+          <button type="button" id="itemEditCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <form id="itemEditForm" class="form-grid" autocomplete="off">
+          <div class="form-field">
+            <label for="itemEditName">Item Name</label>
+            <input id="itemEditName" name="itemEditName" type="text" required>
+          </div>
+          <div class="form-field">
+            <label for="itemEditPrice">Default Price (€)</label>
+            <input id="itemEditPrice" name="itemEditPrice" type="number" step="0.01" min="0" placeholder="0.00">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Invoice View Modal -->
+    <div id="invoiceViewModal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Invoice Details</h3>
+          <button type="button" id="invoiceViewCloseBtn" class="btn btn-secondary btn-icon" title="Close">×</button>
+        </div>
+        <div id="invoiceViewBody"></div>
+      </div>
+    </div>
+
+    <footer class="container footer">
+      <small id="localOnlyNotice">Powered by Edon.</small>
+    </footer>
+  </body>
+  </html>
+
+
